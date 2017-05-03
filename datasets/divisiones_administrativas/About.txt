@@ -1,0 +1,2 @@
+https://github.com/martgnz/bcn-geodata
+The official shapefiles from Barcelona, converted to GeoJSON and TopoJSON for making your life easier
