@@ -1,7 +1,7 @@
  
 datasets/divisiones_administrativas/parcelas-catastrales
 datasets/foursquare
+/node_modules
 /.tmp
 /.sass-cache
-.editorconfig
-.gitattributes
+/bower_components
