@@ -22,19 +22,19 @@ angular
     $locationProvider.hashPrefix('');
     $routeProvider
       // .when('/', {
-      //   templateUrl: 'static/views/main.html',
+      //   templateUrl: 'views/main.html',
       //   controller: 'MainCtrl',
       //   controllerAs: 'main'
       // })
 
       .when('/map', {
-        templateUrl: 'static/views/map.html',
+        templateUrl: 'views/map.html',
         controller: 'MapCtrl',
         controllerAs: 'map'
       })
 
       .when('/about', {
-        templateUrl: 'static/views/about.html',
+        templateUrl: 'views/about.html',
         controller: 'AboutCtrl',
         controllerAs: 'about'
       })
