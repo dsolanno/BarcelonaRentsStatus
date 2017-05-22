@@ -17,6 +17,7 @@ angular.module('visualMinersApp')
 
     var map, svg, g, tip;
     var districtPolygons, choosenPolygon, colorToAssign, neighborhoodPolygons;
+    var MercatorXofLongitude, MercatorYofLatitude, cscale, data;
 
 
     function projectPoint(x, y) {
@@ -26,7 +27,7 @@ angular.module('visualMinersApp')
     }
 
     var clearPaintedPaths = function(){
-      d3.selectAll("path").remove();
+      d3.selectAll(".polygon").remove();
     }
 
     var changeDistrictPolygonColors = function(optionIdx){
@@ -48,57 +49,272 @@ angular.module('visualMinersApp')
       });
     };
 
+    var paintAibnbListings = function(){
+
+
+      //-------------------------------------------------------------------------------------
+      MercatorXofLongitude = function (lon) {
+        return lon * 20037508.34 / 180;
+      }
+
+      MercatorYofLatitude = function (lat) {
+        return (Math.log(Math.tan((90 + lat) * Math.PI / 360)) / (Math.PI / 180)) * 20037508.34 / 180;
+      }
+      cscale = d3.scale.linear().domain([1, 3]).range(['#ffffb2','#fed976','#feb24c','#fd8d3c','#f03b20','#bd0026']);//["#ff0000", "#ff6a00", "#ffd800", "#b6ff00", "#00ffff", "#0094ff"]);//"#00FF00","#FFA500"
+
+
+      var leafletMap = map;
+      d3.csv('datasets/airbnb/listings.csv', function (error, listings) {
+
+        function reformat(array) {
+          data = [];
+          array.map(function (d, i) {
+
+            data.push({
+              id: i,
+              type: "Feature",
+              geometry: {
+                coordinates: [+d.longitude, +d.latitude],
+                type: "Point"
+              }
+
+
+            });
+          });
+          return data;
+        }
+
+
+        var geoData = {type: "FeatureCollection", features: reformat(listings)};
+
+
+        var qtree = d3.geom.quadtree(geoData.features.map(function (data, i) {
+            return {
+              x: data.geometry.coordinates[0],
+              y: data.geometry.coordinates[1],
+              all: data
+            };
+          }
+          )
+        );
+
+
+        // Find the nodes within the specified rectangle.
+        function search(quadtree, x0, y0, x3, y3) {
+          var pts = [];
+          var subPixel = false;
+          var subPts = [];
+          var scale = getZoomScale();
+          console.log(" scale: " + scale);
+          var counter = 0;
+          quadtree.visit(function (node, x1, y1, x2, y2) {
+            var p = node.point;
+            var pwidth = node.width * scale;
+            var pheight = node.height * scale;
+
+            // -- if this is too small rectangle only count the branch and set opacity
+            if ((pwidth * pheight) <= 1) {
+              // start collecting sub Pixel points
+              subPixel = true;
+            }
+            // -- jumped to super node large than 1 pixel
+            else {
+              // end collecting sub Pixel points
+              if (subPixel && subPts && subPts.length > 0) {
+
+                subPts[0].group = subPts.length;
+                pts.push(subPts[0]); // todo calculate intensity
+                counter += subPts.length - 1;
+                subPts = [];
+              }
+              subPixel = false;
+            }
+
+            if ((p) && (p.x >= x0) && (p.x < x3) && (p.y >= y0) && (p.y < y3)) {
+
+              if (subPixel) {
+                subPts.push(p.all);
+              }
+              else {
+                if (p.all.group) {
+                  delete (p.all.group);
+                }
+                pts.push(p.all);
+              }
+
+            }
+            // if quad rect is outside of the search rect do nto search in sub nodes (returns true)
+            return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
+          });
+          console.log(" Number of removed  points: " + counter);
+          return pts;
+
+        }
+
+
+        function updateNodes(quadtree) {
+          var nodes = [];
+          quadtree.depth = 0; // root
+
+          quadtree.visit(function (node, x1, y1, x2, y2) {
+            var nodeRect = {
+              left: MercatorXofLongitude(x1),
+              right: MercatorXofLongitude(x2),
+              bottom: MercatorYofLatitude(y1),
+              top: MercatorYofLatitude(y2),
+            }
+            node.width = (nodeRect.right - nodeRect.left);
+            node.height = (nodeRect.top - nodeRect.bottom);
+
+            if (node.depth == 0) {
+              console.log(" width: " + node.width + "height: " + node.height);
+            }
+            nodes.push(node);
+            for (var i = 0; i < 4; i++) {
+              if (node.nodes[i]) node.nodes[i].depth = node.depth + 1;
+            }
+          });
+          return nodes;
+        }
+
+
+
+
+        // Use Leaflet to implement a D3 geometric transformation.
+        function projectPoint(x, y) {
+          var point = leafletMap.latLngToLayerPoint(new L.LatLng(y, x));
+          this.stream.point(point.x, point.y);
+        }
+
+        var transform = d3.geo.transform({point: projectPoint});
+        var airbnbPaths = d3.geo.path().projection(transform);
+
+
+        updateNodes(qtree);
+
+        leafletMap.on('moveend', function(){
+          console.log("Map move")
+          mapmove();
+        });
+
+        mapmove();
+
+
+        function getZoomScale() {
+          var mapWidth = leafletMap.getSize().x;
+          var bounds = leafletMap.getBounds();
+          var planarWidth = MercatorXofLongitude(bounds.getEast()) - MercatorXofLongitude(bounds.getWest());
+          var zoomScale = mapWidth / planarWidth;
+          return zoomScale;
+
+        }
+
+        function redrawSubset(subset) {
+          airbnbPaths.pointRadius(3);// * scale);
+
+          var bounds = airbnbPaths.bounds({type: "FeatureCollection", features: subset});
+          var topLeft = bounds[0];
+          var bottomRight = bounds[1];
+
+          var start = new Date();
+
+
+          var points = g.selectAll(".point")
+            .data(subset, function (d) {
+              return d.id;
+            });
+          points.enter().append("path");
+          points.exit().remove();
+          points.attr("d", airbnbPaths);
+          points.attr("class","point");
+          points.style("fill-opacity", function (d) {
+            if (d.group) {
+              return (d.group * 0.1) + 0.2;
+            }
+          });
+
+
+          console.log("updated at  " + new Date().setTime(new Date().getTime() - start.getTime()) + " ms ");
+
+        }
+
+        function mapmove(e) {
+          var mapBounds = leafletMap.getBounds();
+          console.log("Map bounds; ", mapBounds);
+
+          qtree = d3.geom.quadtree(geoData.features.map(function (data, i) {
+              return {
+                x: data.geometry.coordinates[0],
+                y: data.geometry.coordinates[1],
+                all: data
+              };
+            }
+            )
+          );
+
+          var subset = search(qtree, mapBounds.getWest(), mapBounds.getSouth(), mapBounds.getEast(), mapBounds.getNorth());
+          console.log("subset: " + subset.length);
+
+          redrawSubset(subset);
+
+        }
+      });
+
+
+    };
+
 
     var paintDistrictsOverMap = function(){
 
       d3.json("datasets/divisiones_administrativas/districtes/districtes_geo.json", function (error, geojson) {
 
 
-          // console.log("Extracted data: ", geojson);
-          var transform = d3.geo.transform({point: projectPoint}),
-            path = d3.geo.path().projection(transform);
+        // console.log("Extracted data: ", geojson);
+        var transform = d3.geo.transform({point: projectPoint}),
+          path = d3.geo.path().projection(transform);
 
-          var feature = g.selectAll("path")
-            .data(geojson.features)
-            .enter()
-            .append("path")
-            .attr("id", function (d) {
+        var feature = g.selectAll("path")
+          .data(geojson.features)
+          .enter()
+          .append("path")
+          .attr("id", function (d) {
 
-              return "District_" + d.properties["Distri"];
-            })
-            .style("stroke", "black")
-            .style("stroke-width", "1")
-            .style("fill", function(d,i) { return "blue"; } )
-            .style("opacity", 0.8);
+            return "District_" + d.properties["Distri"];
+          })
+          .attr("class", "polygon")
+          .style("stroke", "black")
+          .style("stroke-width", "1")
+          .style("fill", function(d,i) { return "blue"; } )
+          .style("opacity", 0.8);
 
-          feature.call(tip);
+        feature.call(tip);
 
-          feature.on('mouseover', tip.show)
-            .on('mouseout', tip.hide);
+        feature.on('mouseover', tip.show)
+          .on('mouseout', tip.hide);
 
-          neighborhoodPolygons = feature;
+        neighborhoodPolygons = feature;
 
 
-          map.on("viewreset", reset);
-          reset();
+        map.on("viewreset", reset);
+        reset();
 
-          // Reposition the SVG to cover the features.
-          function reset() {
-            var bounds = path.bounds(geojson),
-              topLeft = bounds[0],
-              bottomRight = bounds[1];
+        // Reposition the SVG to cover the features.
+        function reset() {
+          var bounds = path.bounds(geojson),
+            topLeft = bounds[0],
+            bottomRight = bounds[1];
 
-            svg.attr("width", bottomRight[0] - topLeft[0])
-              .attr("height", bottomRight[1] - topLeft[1])
-              .style("left", topLeft[0] + "px")
-              .style("top", (topLeft[1]) + "px");
+          svg.attr("width", bottomRight[0] - topLeft[0])
+            .attr("height", bottomRight[1] - topLeft[1])
+            .style("left", topLeft[0] + "px")
+            .style("top", (topLeft[1]) + "px");
 
-            g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
+          g.attr("transform", "translate(" + -topLeft[0] + "," + -topLeft[1] + ")");
 
-            g.selectAll("path").attr("d", path);
-          }
+          g.selectAll("path").attr("d", path);
+        }
 
-        });
+      });
     }
     var paintNeighborhoodOverMap = function(){
 
@@ -118,6 +334,7 @@ angular.module('visualMinersApp')
 
             return "Barri_" + d.properties["N_Barri"];
           })
+          .attr("class", "polygon")
           .style("stroke", "black")
           .style("stroke-width", "1")
           .style("fill", function(d,i) { return"red"; } )
@@ -168,6 +385,7 @@ angular.module('visualMinersApp')
             console.log("D: ", d);
             return "AEB_" + d.properties["C_AEB"];
           })
+          .attr("class", "polygon")
           .style("stroke", "black")
           .style("stroke-width", "1")
           .style("fill", function(d,i) { return"green"; } )
@@ -199,7 +417,7 @@ angular.module('visualMinersApp')
         }
 
       });
-    }
+    };
 
 
 
@@ -225,7 +443,7 @@ angular.module('visualMinersApp')
         maxZoom: 18, attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>'
       }).addTo(map);
 
-      map.options.maxZoom = 14;
+      map.options.maxZoom = 16;
       map.options.minZoom = 12;
 
 
@@ -245,6 +463,8 @@ angular.module('visualMinersApp')
         .attr('class', 'd3-tip')
         .offset([-10, 0])
         .html(function(d) {
+
+          console.log("D: ", d);
           var result = "<p><strong>District: </strong>"+d.properties['N_Distri']+"</p>";
           if(d.properties.hasOwnProperty("N_Barri")){
             result += "<p></p><strong>Neighborhood: </strong>"+d.properties['N_Barri']+"</p>";
@@ -257,36 +477,37 @@ angular.module('visualMinersApp')
           return result;
         });
 
+      paintAibnbListings();
+
+
+
       paintNeighborhoodOverMap();
 
-
-
-
-        map.on('zoomend', function() {
-          console.log("ZOOM: ", map.getZoom());
-          switch(map.getZoom()) {
-            case 12:
-              clearPaintedPaths();
-              paintDistrictsOverMap();
-              break;
-            case 13:
-              clearPaintedPaths();
-              paintNeighborhoodOverMap();
-              break;
-            case 14:
-              clearPaintedPaths();
-              paintAEBsOverMap();
-              break;
-            default:
-              clearPaintedPaths();
-              paintNeighborhoodOverMap();
-          }
-        });
-      };
+      map.on('zoomend', function() {
+        console.log("ZOOM: ", map.getZoom());
+        switch(map.getZoom()) {
+          case 12:
+            clearPaintedPaths();
+            paintDistrictsOverMap();
+            break;
+          case 13:
+            clearPaintedPaths();
+            paintNeighborhoodOverMap();
+            break;
+          case 14:
+            clearPaintedPaths();
+            paintAEBsOverMap();
+            break;
+          default:
+            clearPaintedPaths();
+            paintAEBsOverMap();
+        }
+      });
+    };
 
 
 
 
 
-      createMap();
-    });
+    createMap();
+  });

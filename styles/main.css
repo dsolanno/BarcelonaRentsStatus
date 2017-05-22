@@ -559,4 +559,14 @@ body{
   background-color: #141414;
 }
 
+path {
+  fill: #ffd800;
+  fill-opacity: .2;
+}
+
+path:hover {
+  fill: brown;
+  fill-opacity: .7;
+}
+
 
