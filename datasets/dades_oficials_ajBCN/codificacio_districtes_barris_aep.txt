@@ -1,0 +1,74 @@
+Dte.;Nom Dte.;Barri;AEB inicial;AEB final
+1;Ciutat Vella;1. el Raval;1;8
+1;Ciutat Vella;2. el Barri Gòtic;9;12
+1;Ciutat Vella;3. la Barceloneta;13;15
+1;Ciutat Vella;4. Sant Pere, Santa Caterina i la Ribera;16;19
+2;Eixample;5. el Fort Pienc;20;22
+2;Eixample;6. la Sagrada Família;23;27
+2;Eixample;7. la Dreta de l'Eixample;28;36
+2;Eixample;8. l'Antiga Esquerra de l'Eixample;37;43
+2;Eixample;9. la Nova Esquerra de l'Eixample;44;50
+2;Eixample;10. Sant Antoni;51;55
+3;Sants-Montjuïc;11. el Poble Sec - AEI Parc Montjuïc;56;59
+3;Sants-Montjuïc;12. la Marina del Prat Vermell - AEI Zona Franca;60;60
+3;Sants-Montjuïc;13. la Marina de Port;61;64
+3;Sants-Montjuïc;14. la Font de la Guatlla;65;65
+3;Sants-Montjuïc;15. Hostafrancs;66;67
+3;Sants-Montjuïc;16. la Bordeta;68;69
+3;Sants-Montjuïc;17. Sants - Badal;70;71
+3;Sants-Montjuïc;18. Sants;72;76
+4;Les Corts;19. les Corts;77;84
+4;Les Corts;20. la Maternitat i Sant Ramon;85;87
+4;Les Corts;21. Pedralbes;88;90
+5;Sarrià-Sant Gervasi;22. Vallvidrera, el Tibidabo i les Planes;91;92
+5;Sarrià-Sant Gervasi;23. Sarrià;93;96
+5;Sarrià-Sant Gervasi;24. les Tres Torres;97;99
+5;Sarrià-Sant Gervasi;25. Sant Gervasi - la Bonanova;100;103
+5;Sarrià-Sant Gervasi;26. Sant Gervasi - Galvany;104;110
+5;Sarrià-Sant Gervasi;27. el Putxet i el Farró;111;113
+6;Gràcia;28. Vallcarca i els Penitents;114;117
+6;Gràcia;29. el Coll;118;118
+6;Gràcia;30. la Salut;119;120
+6;Gràcia;31. la Vila de Gràcia;121;130
+6;Gràcia;32. el Camp d'en Grassot i Gràcia Nova;131;134
+7;Horta-Guinardó;33. el Baix Guinardó;135;137
+7;Horta-Guinardó;34. Can Baró;138;138
+7;Horta-Guinardó;35. el Guinardó;139;143
+7;Horta-Guinardó;36. la Font d'en Fargues;144;145
+7;Horta-Guinardó;37. el Carmel;146;148
+7;Horta-Guinardó;38. la Teixonera;149;149
+7;Horta-Guinardó;39. Sant Genís dels Agudells;150;150
+7;Horta-Guinardó;40. Montbau;151;151
+7;Horta-Guinardó;41. la Vall d'Hebron;152;152
+7;Horta-Guinardó;42. la Clota;153;153
+7;Horta-Guinardó;43. Horta;154;156
+8;Nou Barris;44. Vilapicina i la Torre Llobeta;157;160
+8;Nou Barris;45. Porta;161;163
+8;Nou Barris;46. el Turó de la Peira;164;165
+8;Nou Barris;47. Can Peguera;166;166
+8;Nou Barris;48. la Guineueta;167;168
+8;Nou Barris;49. Canyelles;169;169
+8;Nou Barris;50. les Roquetes;170;171
+8;Nou Barris;51. Verdun;172;173
+8;Nou Barris;52. la Prosperitat;174;177
+8;Nou Barris;53. la Trinitat Nova;178;178
+8;Nou Barris;54. Torre Baró;179;179
+8;Nou Barris;55. Ciutat Meridiana;180;180
+8;Nou Barris;56. Vallbona;181;181
+9;Sant Andreu;57. la Trinitat Vella;182;182
+9;Sant Andreu;58. Baró de Viver;183;183
+9;Sant Andreu;59. el Bon Pastor;184;185
+9;Sant Andreu;60. Sant Andreu;186;192
+9;Sant Andreu;61. la Sagrera;193;196
+9;Sant Andreu;62. el Congrés i els Indians;197;198
+9;Sant Andreu;63. Navas;199;200
+10;Sant Martí;64. el Camp de l'Arpa del Clot;201;204
+10;Sant Martí;65. el Clot;205;207
+10;Sant Martí;66. el Parc i la Llacuna del Poblenou;208;209
+10;Sant Martí;67. la Vila Olímpica del Poblenou;210;211
+10;Sant Martí;68. el Poblenou;212;215
+10;Sant Martí;69. Diagonal Mar i el Front Marítim del Poblenou;216;218
+10;Sant Martí;70. el Besòs i el Maresme;219;222
+10;Sant Martí;71. Provençals del Poblenou;223;225
+10;Sant Martí;72. Sant Martí de Provençals;226;229
+10;Sant Martí;73. la Verneda i la Pau;230;233
