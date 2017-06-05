@@ -28,7 +28,7 @@ angular.module('visualMinersApp')
 
     var clearPaintedPaths = function(){
       d3.selectAll(".polygon").remove();
-    }
+    };
 
     var changeDistrictPolygonColors = function(optionIdx){
 
@@ -86,6 +86,7 @@ angular.module('visualMinersApp')
 
 
         var geoData = {type: "FeatureCollection", features: reformat(listings)};
+        console.log("geoData: ", geoData);
 
 
         var qtree = d3.geom.quadtree(geoData.features.map(function (data, i) {
@@ -193,7 +194,7 @@ angular.module('visualMinersApp')
         updateNodes(qtree);
 
         leafletMap.on('moveend', function(){
-          console.log("Map move")
+          console.log("Map move");
           mapmove();
         });
 
@@ -223,10 +224,14 @@ angular.module('visualMinersApp')
             .data(subset, function (d) {
               return d.id;
             });
+
+          console.log("Redraw.Points -->  ", points);
+
           points.enter().append("path");
           points.exit().remove();
           points.attr("d", airbnbPaths);
           points.attr("class","point");
+          points.style("fill", "ffd800")
           points.style("fill-opacity", function (d) {
             if (d.group) {
               return (d.group * 0.1) + 0.2;
@@ -289,8 +294,14 @@ angular.module('visualMinersApp')
 
         feature.call(tip);
 
-        feature.on('mouseover', tip.show)
-          .on('mouseout', tip.hide);
+        feature.on('mouseover', function(d){
+          tip.show(d);
+          d.style('opacity', '0.7');
+        });
+        feature.on('mouseout', function(d){
+          tip.hide(d);
+          d.style('opacity', '0.1');
+        });
 
         neighborhoodPolygons = feature;
 
@@ -341,8 +352,15 @@ angular.module('visualMinersApp')
           .style("opacity", 0.8);
         feature.call(tip);
 
-        feature.on('mouseover', tip.show)
-          .on('mouseout', tip.hide)
+        feature.on('mouseover', function(d){
+          tip.show(d);
+          d.style('opacity', '0.7');
+        });
+        feature.on('mouseout', function(d){
+            tip.hide(d);
+            d.style('opacity', '0.1');
+          });
+
         neighborhoodPolygons = feature;
 
 
@@ -392,8 +410,14 @@ angular.module('visualMinersApp')
           .style("opacity", 0.8);
         feature.call(tip);
 
-        feature.on('mouseover', tip.show)
-          .on('mouseout', tip.hide)
+        feature.on('mouseover', function(d){
+          tip.show(d);
+          d.style('opacity', '0.7');
+        });
+        feature.on('mouseout', function(d){
+          tip.hide(d);
+          d.style('opacity', '0.1');
+        });
         neighborhoodPolygons = feature;
 
 
@@ -503,11 +527,21 @@ angular.module('visualMinersApp')
             paintAEBsOverMap();
         }
       });
+
+      // d3.polygonContains(polygon, point)
     };
 
 
-
-
-
     createMap();
+
+
+    /* Set the width of the side navigation to 250px */
+    $scope.openNav = function() {
+      document.getElementById("mySidenav").style.width = "250px";
+    }
+
+    /* Set the width of the side navigation to 0 */
+    $scope.closeNav = function () {
+      document.getElementById("mySidenav").style.width = "0";
+    }
   });
