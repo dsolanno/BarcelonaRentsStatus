@@ -20,6 +20,15 @@ angular.module('visualMinersApp')
     var MercatorXofLongitude, MercatorYofLatitude, cscale, data;
 
 
+    const LISTING_HOVERED = "orange";
+
+    const USE_DISTRICTS_GRANULARITY = 0;
+    const USE_NEIGHBORHOODS_GRANULARITY = 1;
+
+
+    $scope.granularitySelected = USE_DISTRICTS_GRANULARITY;
+
+
     function projectPoint(x, y) {
       var point = map.latLngToLayerPoint(new L.LatLng(y, x));
       this.stream.point(point.x, point.y);
@@ -73,6 +82,7 @@ angular.module('visualMinersApp')
             data.push({
               id: i,
               type: "Feature",
+              airbnb_data: d,
               geometry: {
                 coordinates: [+d.longitude, +d.latitude],
                 type: "Point"
@@ -225,18 +235,80 @@ angular.module('visualMinersApp')
               return d.id;
             });
 
+          console.log("Redraw.Subset -->  ", subset);
           console.log("Redraw.Points -->  ", points);
 
           points.enter().append("path");
           points.exit().remove();
           points.attr("d", airbnbPaths);
           points.attr("class","point");
-          points.style("fill", "ffd800")
+          points.style("fill", "ffd800");
           points.style("fill-opacity", function (d) {
             if (d.group) {
               return (d.group * 0.1) + 0.2;
             }
           });
+
+
+          points.call(tip);
+
+          points.on('mouseover', function(d, i){
+
+            if( $scope.granularitySelected == USE_NEIGHBORHOODS_GRANULARITY) {
+              d3.selectAll(".point")[0].forEach(function (tmp, i) {
+
+                if (tmp.__data__.airbnb_data.neighbourhood == d.airbnb_data.neighbourhood) {
+
+                  tmp = d3.select(tmp);
+                  tmp.style('opacity', '1');
+                  tmp.style("fill", LISTING_HOVERED);
+
+                }
+              });
+            }
+            else  if( $scope.granularitySelected == USE_DISTRICTS_GRANULARITY) {
+              d3.selectAll(".point")[0].forEach(function (tmp, i) {
+
+
+                if (tmp.__data__.airbnb_data.neighbourhood_group == d.airbnb_data.neighbourhood_group) {
+                  tmp = d3.select(tmp);
+                  tmp.style('opacity', '1');
+                  tmp.style("fill", LISTING_HOVERED);
+                }
+              });
+            }
+
+            tip.show(d);
+
+
+          });
+          points.on('mouseout', function(d){
+
+            tip.hide(d);
+            if( $scope.granularitySelected == USE_NEIGHBORHOODS_GRANULARITY) {
+              d3.selectAll(".point")[0].forEach(function (tmp, i) {
+                // console.log("TMP: ", tmp);
+                if (tmp.__data__.airbnb_data.neighbourhood == d.airbnb_data.neighbourhood) {
+                  tmp = d3.select(tmp);
+                  tmp.style("fill", "ffd800");
+                }
+
+
+              })
+            }else if($scope.granularitySelected == USE_DISTRICTS_GRANULARITY) {
+              d3.selectAll(".point")[0].forEach(function (tmp, i) {
+                // console.log("TMP: ", tmp);
+                if (tmp.__data__.airbnb_data.neighbourhood_group == d.airbnb_data.neighbourhood_group) {
+                  tmp = d3.select(tmp);
+                  tmp.style("fill", "ffd800");
+                }
+
+
+              })
+            }
+
+          });
+
 
 
           console.log("updated at  " + new Date().setTime(new Date().getTime() - start.getTime()) + " ms ");
@@ -412,11 +484,13 @@ angular.module('visualMinersApp')
 
         feature.on('mouseover', function(d){
           tip.show(d);
-          d.style('opacity', '0.7');
+          // d.style('opacity', '0.7');
+
+
         });
         feature.on('mouseout', function(d){
           tip.hide(d);
-          d.style('opacity', '0.1');
+          // d.style('opacity', '0.1');
         });
         neighborhoodPolygons = feature;
 
@@ -485,16 +559,74 @@ angular.module('visualMinersApp')
 
       tip = d3.tip()
         .attr('class', 'd3-tip')
-        .offset([-10, 0])
+      .direction('e')
+        .offset([0, 20])
         .html(function(d) {
+          var result = "";
+          console.log("TIP for: ", d);
 
-          console.log("D: ", d);
-          var result = "<p><strong>District: </strong>"+d.properties['N_Distri']+"</p>";
-          if(d.properties.hasOwnProperty("N_Barri")){
-            result += "<p></p><strong>Neighborhood: </strong>"+d.properties['N_Barri']+"</p>";
+          if(d.hasOwnProperty("properties")) {
+
+            if (d.properties.hasOwnProperty("N_Distri")) {
+              console.log("D: ", d);
+              result += "<p><strong>District: </strong>" + d.properties['N_Distri'] + "</p>";
+            }
+            if (d.properties.hasOwnProperty("N_Barri")) {
+              result += "<p></p><strong>Neighborhood: </strong>" + d.properties['N_Barri'] + "</p>";
+            }
+            if (d.properties.hasOwnProperty("C_AEB")) {
+              result += "<p></p><strong>AEB: </strong>" + d.properties['C_AEB'] + "</p>";
+            }
           }
-          if(d.properties.hasOwnProperty("C_AEB")){
-            result += "<p></p><strong>AEB: </strong>"+d.properties['C_AEB']+"</p>";
+          if(d.hasOwnProperty("airbnb_data")){
+            result += "<p></p><strong>Neighborhood: </strong>" + d.airbnb_data['neighbourhood_group'] + "</p>";
+
+
+            if( $scope.granularitySelected == USE_NEIGHBORHOODS_GRANULARITY) {
+
+              result += "<p></p><strong>District: </strong>"+d.airbnb_data['neighbourhood']+"</p>";
+
+
+            }
+
+            // result += "<p></p><strong>Price: </strong>"+d.airbnb_data['price']+"</p>";
+            var totalListings = 0;
+            var sumPrice = 0;
+
+
+            console.log("granularitySelected: ", $scope.granularitySelected);
+            if( $scope.granularitySelected == USE_NEIGHBORHOODS_GRANULARITY) {
+
+
+              d3.selectAll(".point")[0].forEach(function (tmp, i) {
+
+
+                if (tmp.__data__.airbnb_data.neighbourhood == d.airbnb_data.neighbourhood) {
+                  // tmp = d3.select(tmp)[0]
+                  // console.log("tmp: ", tmp[0].__data__);
+                  sumPrice += parseInt(tmp.__data__.airbnb_data.price);
+                  totalListings++;
+
+                }
+              });
+            }
+            else if( $scope.granularitySelected == USE_DISTRICTS_GRANULARITY) {
+              d3.selectAll(".point")[0].forEach(function (tmp, i) {
+
+
+                if (tmp.__data__.airbnb_data.neighbourhood_group == d.airbnb_data.neighbourhood_group) {
+                  // tmp = d3.select(tmp)[0]
+                  // console.log("tmp: ", tmp[0].__data__);
+                  sumPrice += parseInt(tmp.__data__.airbnb_data.price);
+                  totalListings++;
+
+                }
+              });
+            }
+
+            result += "<p></p><strong>Zone avg price: </strong>"+(sumPrice/totalListings).toFixed(2)+"</p>";
+            result += "<p></p><strong>Zone total listings: </strong>"+totalListings+"</p>";
+
           }
 
 
@@ -505,11 +637,11 @@ angular.module('visualMinersApp')
 
 
 
-      paintNeighborhoodOverMap();
+      // paintNeighborhoodOverMap();
 
       map.on('zoomend', function() {
         console.log("ZOOM: ", map.getZoom());
-        switch(map.getZoom()) {
+        /*switch(map.getZoom()) {
           case 12:
             clearPaintedPaths();
             paintDistrictsOverMap();
@@ -525,11 +657,12 @@ angular.module('visualMinersApp')
           default:
             clearPaintedPaths();
             paintAEBsOverMap();
-        }
+        }*/
       });
 
       // d3.polygonContains(polygon, point)
     };
+
 
 
     createMap();

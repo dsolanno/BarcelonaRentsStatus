@@ -17,10 +17,73 @@
 
 <div id="mySidenav" class="sidenav">
   <a href="javascript:void(0)" class="closebtn" ng-click="closeNav()">&times;</a>
-  <a href="#">About</a>
+  <!--<a href="#">About</a>
   <a href="#">Services</a>
   <a href="#">Clients</a>
-  <a href="#">Contact</a>
+  <a href="#">Contact</a>-->
+<div class="row col-md-10 col-md-offset-1">
+  <form class="form-horizontal row">
+    <fieldset>
+      <legend>Options</legend>
+    <div class="form-group">
+    <label class="col-lg-2 control-label">Polygon granularity</label>
+    <br>
+      <br>
+    <div class="col-lg-10">
+      <div class="radio">
+        <label>
+          <input type="radio" name="granularityRadio" id="granularityRadio1" value="0" ng-model="granularitySelected" ng-checked="true" >
+         Districts
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="granularityRadio" id="granularityRadio2" value="1" ng-model="granularitySelected" >
+          Neighborhood
+        </label>
+      </div>
+    </div>
+  </div>
+
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Data shown</label>
+        <br>
+        <br>
+        <div class="col-lg-10">
+          <div class="radio">
+            <label>
+              <input type="radio" name="selectedDataset" id="dataShown1" value="airbnb" ng-model="selectedDataset" ng-checked="true" >
+              Airbnb listings
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Data type</label>
+        <br>
+        <br>
+        <div class="col-lg-10">
+          <div class="radio">
+            <label>
+              <input type="radio" name="selectedDataType" id="dataType1" value="point" ng-model="selectedDataset" ng-checked="true" >
+              Point
+            </label>
+            <br>
+
+            <label>
+              <input type="radio" name="selectedDataType" id="dataType2" value="heatmap" ng-model="selectedDataset" ng-checked="true" >
+              Heatmap
+            </label>
+
+          </div>
+        </div>
+      </div>
+
+    </fieldset>
+  </form>
+</div>
+
 </div>
 
 

@@ -458,7 +458,7 @@ D3 tooltip
   line-height: 1;
   font-weight: bold;
   padding: 12px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   border-radius: 2px;
 }
@@ -470,7 +470,7 @@ D3 tooltip
   font-size: 10px;
   width: 100%;
   line-height: 1;
-  color: rgba(0, 0, 0, 0.8);
+  color: rgba(0, 0, 0, 0.6);
   content: "\25BC";
   position: absolute;
   text-align: center;
@@ -623,5 +623,9 @@ path {
 
 .sidenav {
   right: 0;
+}
+
+body{
+  color:#777777;
 }
 
