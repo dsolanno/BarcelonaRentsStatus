@@ -16,7 +16,8 @@ angular
     'ngRoute',
     'ngSanitize',
     'ngTouch',
-    'duScroll'
+    'duScroll',
+    'rzModule'
   ])
   .config(function ($routeProvider,$locationProvider) {
     $locationProvider.hashPrefix('');

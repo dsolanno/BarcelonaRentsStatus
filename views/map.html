@@ -66,13 +66,13 @@
         <div class="col-lg-10">
           <div class="radio">
             <label>
-              <input type="radio" name="selectedDataType" id="dataType1" value="point" ng-model="selectedDataset" ng-checked="true" >
+              <input type="radio" name="selectedDataType" id="dataType1" value="point" ng-model="selectedDatasetType" ng-checked="true" >
               Point
             </label>
             <br>
 
             <label>
-              <input type="radio" name="selectedDataType" id="dataType2" value="choropleth" ng-model="selectedDataset">
+              <input type="radio" name="selectedDataType" id="dataType2" value="choropleth" ng-model="selectedDatasetType">
               Choropleth
             </label>
 
@@ -84,6 +84,13 @@
   </form>
 </div>
 
+</div>
+
+
+<div class="row col-md-12 align-bottom" style="float:right;position:absolute;bottom:10%;" ng-if="selectedDataset == dataShown1">
+  <div class="col-md-6 col-md-offset-3">
+    <input id="slider" type="range" min="1987" max="2010" value="1987" step="1" />
+  </div>
 </div>
 
 
