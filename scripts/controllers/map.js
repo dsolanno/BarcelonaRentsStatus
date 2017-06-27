@@ -811,15 +811,15 @@ angular.module('visualMinersApp')
           return result;
         });
 
-      // paintAibnbListings();
+      paintAibnbListings();
 
 
 
-       paintNeighborhoodOverMap();
+      // paintNeighborhoodOverMap();
 
       map.on('zoomend', function() {
         console.log("ZOOM: ", map.getZoom());
-        switch(map.getZoom()) {
+        /*switch(map.getZoom()) {
           case 12:
             clearPaintedPaths();
             paintDistrictsOverMap();
@@ -835,10 +835,10 @@ angular.module('visualMinersApp')
           default:
             clearPaintedPaths();
             paintAEBsOverMap();
-        }
+        }*/
       });
 
-      d3.polygonContains(polygon, point)
+      // d3.polygonContains(polygon, point)
     };
 
 
