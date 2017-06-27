@@ -15,6 +15,23 @@ angular.module('visualMinersApp')
       'Karma'
     ];
 
+    $scope.currentDate = -1;
+
+    $scope.STATE_STOP=1;
+    $scope.STATE_PLAY=2;
+    $scope.STATE_PAUSE=3;
+    $scope.STATE_RESUME=4;
+
+    $scope.time_slider_state = $scope.STATE_STOP;
+    $scope.time_interval;
+    $scope.totalListings =667;
+
+    var original_listings_dataset = [];
+
+    var MONTHS_INTERVAL_STEP = 12;
+    var timeSliderDelay = 1000;
+
+
     var map, svg, g, tip;
     var districtPolygons, choosenPolygon, colorToAssign, neighborhoodPolygons;
     var MercatorXofLongitude, MercatorYofLatitude, cscale, data;
@@ -73,7 +90,152 @@ angular.module('visualMinersApp')
 
 
       var leafletMap = map;
-      d3.csv('datasets/airbnb/listings.csv', function (error, listings) {
+      //d3.csv('datasets/airbnb/listings.csv', function (error, listings) {
+      d3.dsv('|')('datasets/airbnb/listings_host_until.csv', function (error, listings) {
+
+
+        $scope.maxDate = new Date(d3.entries(listings)
+        // sort by value descending
+          .sort(function(a, b) { return d3.descending(new Date(a.host_until), new Date(b.host_until))})
+          // take the first option
+          [0].value.host_until);
+
+        $scope.minDate = new Date(d3.entries(listings)
+        // sort by value descending
+          .sort(function(a, b) { return d3.ascending(new Date(a.first_review), new Date(b.first_review)) })
+          // take the first option
+          [0].value.first_review);
+
+        console.log("MAx date: ", $scope.maxDate);
+        console.log("Min date: ", $scope.minDate);
+
+        $scope.currentDate = $scope.minDate;
+
+
+
+
+
+        $scope.buttonPlayPressed = function () {
+
+          console.log("PLAY");
+
+          if ($scope.time_slider_state == $scope.STATE_STOP) {
+            $scope.time_slider_state = $scope.STATE_PLAY;
+            $scope.time_interval = setInterval(function () {
+              // var val = $('#time_slider').slider("getValue");
+              // $("#time_slider").slider("setValue", val + 1, true, true);
+
+              var tmpDate = new Date($scope.currentDate.getTime());
+              tmpDate.setMonth(tmpDate.getMonth() + MONTHS_INTERVAL_STEP);
+
+              if(tmpDate.getTime() > $scope.maxDate.getTime()){
+                $scope.currentDate = $scope.maxDate;
+              }else{
+                $scope.currentDate.setMonth($scope.currentDate.getMonth()+MONTHS_INTERVAL_STEP);
+              }
+
+              calculateAndPaintPointsOnMap();
+
+              if (!$scope.$$phase) $scope.$apply();
+
+            }, timeSliderDelay)
+          }
+          else if ($scope.time_slider_state == $scope.STATE_PLAY || $scope.time_slider_state == $scope.STATE_RESUME) {
+            $scope.time_slider_state = $scope.STATE_PAUSE;
+            clearInterval($scope.time_interval);
+          }
+          else if ($scope.time_slider_state == $scope.STATE_PAUSE) {
+            $scope.time_slider_state = $scope.STATE_RESUME;
+            $scope.time_interval = setInterval(function () {
+              // var val = $('#time_slider').slider("getValue");
+              // $("#time_slider").slider("setValue", val + 1, true, true);
+
+              var tmpDate = new Date($scope.currentDate.getTime());
+              tmpDate.setMonth(tmpDate.getMonth() + MONTHS_INTERVAL_STEP);
+
+              if(tmpDate.getTime() > $scope.maxDate.getTime()){
+                $scope.currentDate = $scope.maxDate;
+              }else{
+                $scope.currentDate.setMonth($scope.currentDate.getMonth()+MONTHS_INTERVAL_STEP);
+              }
+
+              calculateAndPaintPointsOnMap();
+
+              if (!$scope.$$phase) $scope.$apply();
+
+            }, timeSliderDelay)
+          }
+        };
+
+        $scope.buttonNextPressed = function(){
+
+          console.log("NEXT");
+
+          $scope.time_slider_state = $scope.STATE_PAUSE;
+          // var val = $('#time_slider').slider("getValue");
+          // $("#time_slider").slider("setValue", val + 1, true, true);
+          var tmpDate = new Date($scope.currentDate.getTime());
+          tmpDate.setMonth(tmpDate.getMonth() + MONTHS_INTERVAL_STEP)
+          if(tmpDate.getTime() > $scope.maxDate.getTime()){
+            $scope.currentDate = $scope.maxDate;
+          }else{
+            $scope.currentDate.setMonth($scope.currentDate.getMonth()+MONTHS_INTERVAL_STEP);
+          }
+          clearInterval($scope.time_interval);
+          if (!$scope.$$phase) $scope.$apply();
+          calculateAndPaintPointsOnMap();
+
+        };
+        $scope.buttonBackPressed = function(){
+
+          console.log("BACK");
+
+          $scope.time_slider_state = $scope.STATE_PAUSE;
+         /* var val = $('#time_slider').slider("getValue");
+          $("#time_slider").slider("setValue", val - 1, true, true);*/
+
+         var tmpDate = new Date($scope.currentDate.getTime());
+          tmpDate.setMonth(tmpDate.getMonth()-MONTHS_INTERVAL_STEP);
+
+          if(tmpDate.getTime() < $scope.minDate.getTime()){
+            $scope.currentDate = new Date($scope.minDate.getTime());
+            if (!$scope.$$phase) $scope.$apply();
+          }else{
+            $scope.currentDate.setMonth($scope.currentDate.getMonth()-MONTHS_INTERVAL_STEP);
+            if (!$scope.$$phase) $scope.$apply();
+          }
+          clearInterval($scope.time_interval);
+
+          if (!$scope.$$phase) $scope.$apply();
+
+          calculateAndPaintPointsOnMap();
+
+
+
+        };
+
+        $scope.buttonStopPressed = function () {
+          console.log("STOP");
+
+          $scope.time_slider_state = $scope.STATE_STOP;
+          clearInterval($scope.time_interval);
+
+          $scope.currentDate = new Date($scope.minDate.getTime());
+          if (!$scope.$$phase) $scope.$apply();
+          calculateAndPaintPointsOnMap();
+
+          // var e = {
+          //   value : {
+          //     newValue: $scope.relativeStartingTs
+          //   }
+          // };
+          // // $scope.timeChangedListener(e);
+          // // $scope.updateCurrentTimestamp(e.value.newValue );
+
+          // $("#time_slider").slider("setValue",  0, true, true);
+        };
+
+        if (!$scope.$$phase) $scope.$apply();
 
         function reformat(array) {
           data = [];
@@ -97,6 +259,9 @@ angular.module('visualMinersApp')
 
         var geoData = {type: "FeatureCollection", features: reformat(listings)};
         console.log("geoData: ", geoData);
+
+        original_listings_dataset = geoData;
+
 
 
         var qtree = d3.geom.quadtree(geoData.features.map(function (data, i) {
@@ -174,6 +339,8 @@ angular.module('visualMinersApp')
               bottom: MercatorYofLatitude(y1),
               top: MercatorYofLatitude(y2),
             }
+
+            //console.log("nodeRect: ", nodeRect);
             node.width = (nodeRect.right - nodeRect.left);
             node.height = (nodeRect.top - nodeRect.bottom);
 
@@ -187,9 +354,6 @@ angular.module('visualMinersApp')
           });
           return nodes;
         }
-
-
-
 
         // Use Leaflet to implement a D3 geometric transformation.
         function projectPoint(x, y) {
@@ -315,11 +479,22 @@ angular.module('visualMinersApp')
 
         }
 
-        function mapmove(e) {
+        function calculateAndPaintPointsOnMap (){
           var mapBounds = leafletMap.getBounds();
-          console.log("Map bounds; ", mapBounds);
 
-          qtree = d3.geom.quadtree(geoData.features.map(function (data, i) {
+          var tmpGeoData= {
+            features : geoData.features.filter(function(airbnb_listing){
+
+             return ((new Date(airbnb_listing.airbnb_data.host_until).getTime() >= $scope.currentDate.getTime()) && (new Date(airbnb_listing.airbnb_data.first_review).getTime() <= $scope.currentDate.getTime()))
+            })
+          };
+
+          $scope.totalListings = tmpGeoData.features.length;
+          if (!$scope.$$phase) $scope.$apply();
+
+          console.log("Filtered data: ", tmpGeoData.features.length);
+
+          qtree = d3.geom.quadtree(tmpGeoData.features.map(function (data, i) {
               return {
                 x: data.geometry.coordinates[0],
                 y: data.geometry.coordinates[1],
@@ -333,6 +508,10 @@ angular.module('visualMinersApp')
           console.log("subset: " + subset.length);
 
           redrawSubset(subset);
+        }
+
+        function mapmove(e) {
+          calculateAndPaintPointsOnMap();
 
         }
       });
@@ -563,7 +742,6 @@ angular.module('visualMinersApp')
         .offset([0, 20])
         .html(function(d) {
           var result = "";
-          console.log("TIP for: ", d);
 
           if(d.hasOwnProperty("properties")) {
 
@@ -633,15 +811,15 @@ angular.module('visualMinersApp')
           return result;
         });
 
-      paintAibnbListings();
+      // paintAibnbListings();
 
 
 
-      // paintNeighborhoodOverMap();
+       paintNeighborhoodOverMap();
 
       map.on('zoomend', function() {
         console.log("ZOOM: ", map.getZoom());
-        /*switch(map.getZoom()) {
+        switch(map.getZoom()) {
           case 12:
             clearPaintedPaths();
             paintDistrictsOverMap();
@@ -657,10 +835,10 @@ angular.module('visualMinersApp')
           default:
             clearPaintedPaths();
             paintAEBsOverMap();
-        }*/
+        }
       });
 
-      // d3.polygonContains(polygon, point)
+      d3.polygonContains(polygon, point)
     };
 
 

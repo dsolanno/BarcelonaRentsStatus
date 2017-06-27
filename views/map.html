@@ -87,12 +87,39 @@
 </div>
 
 
-<div class="row col-md-12 align-bottom" style="float:right;position:absolute;bottom:10%;" ng-if="selectedDataset == dataShown1">
-  <div class="col-md-6 col-md-offset-3">
-    <input id="slider" type="range" min="1987" max="2010" value="1987" step="1" />
-  </div>
-</div>
+<div class="row col-md-12 align-bottom" style="float:right;position:absolute;bottom:10%;" ng-if="selectedDataset == dataShown1" style="z-index: 9999">
 
+  <div class="col-md-8 col-md-offset-4 text-right" ng-if="currentDate != -1">
+    <h2>{{currentDate | date:'EEEE dd-MM-yyyy'}}</h2>
+  </div>
+
+  <div class="col-md-8 col-md-offset-4 text-right" ng-if="currentDate != -1">
+    <h4>Total listings: {{totalListings}}</h4>
+  </div>
+
+  <div class="col-md-8 col-md-offset-4 text-right" ng-if="currentDate != -1">
+
+    <button id="button_back" type="button" class="btn btn-default btn-sm" ng-click="buttonBackPressed()">
+              <span class="glyphicon glyphicon-step-backward">
+              </span>
+    </button>
+    <button id="button_play" type="button" class="btn btn-default btn-sm" ng-click="buttonPlayPressed()" ng-class="{'glyphicon glyphicon-pause':(time_slider_state == STATE_PLAY || time_slider_state == STATE_RESUME)}">
+                <span aria-hidden="true" ng-class="{'glyphicon glyphicon-play':(time_slider_state == STATE_PAUSE || time_slider_state == STATE_STOP)}">
+
+                </span>
+    </button>
+
+
+    <button id="button_stop" type="button" class="btn btn-default btn-sm" ng-click="buttonStopPressed()">
+              <span class="glyphicon glyphicon-stop">
+              </span>
+    </button>
+
+    <button id="button_next" type="button" class="btn btn-default btn-sm" ng-click="buttonNextPressed()">
+              <span class="glyphicon glyphicon-step-forward">
+              </span>
+    </button>
+  </div>
 
 </div>
 
