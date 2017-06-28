@@ -91,7 +91,7 @@ angular.module('visualMinersApp')
 
       var leafletMap = map;
       //d3.csv('datasets/airbnb/listings.csv', function (error, listings) {
-      d3.dsv('|')('datasets/airbnb/listings_host_until.csv', function (error, listings) {
+      d3.dsv('|')('datasets/airbnb/listings_host_until_drops.csv', function (error, listings) {
 
 
         $scope.maxDate = new Date(d3.entries(listings)
@@ -105,6 +105,8 @@ angular.module('visualMinersApp')
           .sort(function(a, b) { return d3.ascending(new Date(a.first_review), new Date(b.first_review)) })
           // take the first option
           [0].value.first_review);
+
+        // $scope.maxDate.setMonth($scope.maxDate.getMonth()-1);
 
         console.log("MAx date: ", $scope.maxDate);
         console.log("Min date: ", $scope.minDate);
@@ -434,7 +436,7 @@ angular.module('visualMinersApp')
               d3.selectAll(".point")[0].forEach(function (tmp, i) {
 
 
-                if (tmp.__data__.airbnb_data.neighbourhood_group == d.airbnb_data.neighbourhood_group) {
+                if (tmp.__data__.airbnb_data.neighbourhood_group_cleansed == d.airbnb_data.neighbourhood_group_cleansed) {
                   tmp = d3.select(tmp);
                   tmp.style('opacity', '1');
                   tmp.style("fill", LISTING_HOVERED);
@@ -462,7 +464,7 @@ angular.module('visualMinersApp')
             }else if($scope.granularitySelected == USE_DISTRICTS_GRANULARITY) {
               d3.selectAll(".point")[0].forEach(function (tmp, i) {
                 // console.log("TMP: ", tmp);
-                if (tmp.__data__.airbnb_data.neighbourhood_group == d.airbnb_data.neighbourhood_group) {
+                if (tmp.__data__.airbnb_data.neighbourhood_group_cleansed == d.airbnb_data.neighbourhood_group_cleansed) {
                   tmp = d3.select(tmp);
                   tmp.style("fill", "ffd800");
                 }
@@ -757,12 +759,12 @@ angular.module('visualMinersApp')
             }
           }
           if(d.hasOwnProperty("airbnb_data")){
-            result += "<p></p><strong>Neighborhood: </strong>" + d.airbnb_data['neighbourhood_group'] + "</p>";
+            result += "<p></p><strong>Neighborhood: </strong>" + d.airbnb_data['neighbourhood_group_cleansed'] + "</p>";
 
 
             if( $scope.granularitySelected == USE_NEIGHBORHOODS_GRANULARITY) {
 
-              result += "<p></p><strong>District: </strong>"+d.airbnb_data['neighbourhood']+"</p>";
+              result += "<p></p><strong>District: </strong>"+d.airbnb_data['neighbourhood_cleansed']+"</p>";
 
 
             }
@@ -779,7 +781,7 @@ angular.module('visualMinersApp')
               d3.selectAll(".point")[0].forEach(function (tmp, i) {
 
 
-                if (tmp.__data__.airbnb_data.neighbourhood == d.airbnb_data.neighbourhood) {
+                if (tmp.__data__.airbnb_data.neighbourhood == d.airbnb_data.neighbourhood_cleansed) {
                   // tmp = d3.select(tmp)[0]
                   // console.log("tmp: ", tmp[0].__data__);
                   sumPrice += parseInt(tmp.__data__.airbnb_data.price);
@@ -792,10 +794,10 @@ angular.module('visualMinersApp')
               d3.selectAll(".point")[0].forEach(function (tmp, i) {
 
 
-                if (tmp.__data__.airbnb_data.neighbourhood_group == d.airbnb_data.neighbourhood_group) {
+                if (tmp.__data__.airbnb_data.neighbourhood_group_cleansed == d.airbnb_data.neighbourhood_group_cleansed) {
                   // tmp = d3.select(tmp)[0]
                   // console.log("tmp: ", tmp[0].__data__);
-                  sumPrice += parseInt(tmp.__data__.airbnb_data.price);
+                  sumPrice += parseInt(tmp.__data__.airbnb_data.price.replace("$", ""));
                   totalListings++;
 
                 }
